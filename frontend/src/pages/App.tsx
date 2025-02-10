@@ -1,4 +1,4 @@
-import { addToCart, cart, removeFromCart, clearCart, totalPrice } from "~/store";
+import { addToCart, cart, removeFromCart, clearCart, totalPrice } from "~/store/index";
 import { useNavigate } from "@solidjs/router";
 
 const products = [

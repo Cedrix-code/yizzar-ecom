@@ -1,24 +1,37 @@
-import { cart, removeFromCart, clearCart, totalPrice } from "~/store";
+import { cart, removeFromCart, clearCart, totalPrice } from "~/store/index";
+import { loadStripe } from "@stripe/stripe-js";
+import { isAuthenticated } from "~/auth";
+import { useNavigate } from "@solidjs/router";
 
-const API_URL = import.meta.env.VITE_API_URL;
+
+const stripePromise = loadStripe("pk_test_51QqyTvFJu8npj8tJZDrXQagF9f7Fdf6ELDm5CVFynoKfLkWHeTFkM3A4ckKjcnm39b7GIU1F1ieVoMobU97kywpR00XXVIOlXx");
 
 export default function Checkout() {
   const handleOrder = async () => {
+    const stripe = await stripePromise;
     const order = { items: cart(), total: totalPrice() };
 
-    const response = await fetch(`${API_URL}/api/order`, {
+    const response = await fetch("http://localhost:5000/api/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(order),
     });
 
+    const data = await response.json();
     if (response.ok) {
       alert("Order placed successfully!");
       clearCart();
     } else {
-      alert("Failed to place order.");
+      alert("Failed to place order: " + data.error);
     }
   };
+
+  const navigate = useNavigate();
+
+  if (!isAuthenticated()) {
+    navigate("/login");
+    return null;
+  }
 
   return (
     <div class="p-6 max-w-4xl mx-auto">
@@ -40,7 +53,7 @@ export default function Checkout() {
           </ul>
           <p class="font-semibold">Total: ${totalPrice()}</p>
           <button class="mt-4 bg-green-500 text-white px-6 py-2 rounded" onClick={handleOrder}>
-            Confirm Order
+            Pay with Stripe
           </button>
         </>
       )}
